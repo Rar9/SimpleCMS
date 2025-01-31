@@ -17,7 +17,7 @@ Features:
 
 <script lang="ts">
 	// Stores
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 
 	// Component
 	import PageTitle from '@components/PageTitle.svelte';
@@ -30,16 +30,16 @@ Features:
 	import type { PermissionConfig } from '@src/auth/permissionCheck';
 	import { onMount } from 'svelte';
 	import { collection } from '@src/stores/collectionStore.svelte';
-	import type { Schema } from '@src/content/ContentManager';
+	//import type { Schema } from '@src/content/ContentManager';
 
 	// Define the structure of dynamicPermissions
 	type DynamicPermissions = Record<string, PermissionConfig>;
 
 	// Get server-side data
-	let dynamicPermissions = $derived($page.data.permissionConfigs as DynamicPermissions); // Dynamically loaded permissions
+	let dynamicPermissions = $derived(page.data.permissionConfigs as DynamicPermissions); // Dynamically loaded permissions
 
 	onMount(() => {
-		collection.set({} as Schema);
+		collection.set(null);
 	});
 
 	// Create a mapping from contextId to dynamic permissions for easier access

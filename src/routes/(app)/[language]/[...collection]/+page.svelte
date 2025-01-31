@@ -12,7 +12,7 @@ It also handles navigation, mode switching (view, edit, create, media), and SEO 
 	import { browser } from '$app/environment';
 
 	// Stores
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { contentLanguage } from '@stores/store.svelte';
 	import { collection, collectionValue, mode } from '@root/src/stores/collectionStore.svelte';
 
@@ -25,93 +25,50 @@ It also handles navigation, mode switching (view, edit, create, media), and SEO 
 	import { logger } from '@utils/logger.svelte';
 	import type { User } from '@root/src/auth/types.js';
 	import { deserializeCollection } from '@root/src/utils/serialize';
+	import { publicEnv } from '@root/config/public';
+	import type { AvailableLanguageTag } from '@root/src/paraglide/runtime';
 
 	interface Props {
-		data: { collection: string; language: string; user: User };
+		data: { collection: string; contentLanguage: string; user: User };
 	}
 	const { data }: Props = $props();
 
-	let forwardBackward = $state(false);
-	let initialLoadComplete = $state(false);
-	let navigationError = $state<string | null>(null);
-	let currentCollectionName = $state<string | undefined>(undefined);
-	let currentLanguage = $state<string | undefined>(undefined);
-	let isLoading = $state(true);
+	let isLoading = $state(false);
 
-	// Initialize collection
-	async function initializeCollection() {
-		if (!$page.params.collection) return;
-
-		try {
-			// Wait for Content Manager initialization
-
-			const selectedCollection = deserializeCollection(data.collection);
-			console.log('selectedCollection', selectedCollection);
-			// console.log('selectedCollection', selectedCollection, $page.params.collection);
-			if (selectedCollection) {
-				collection.set(selectedCollection);
-				initialLoadComplete = true;
-				navigationError = null;
-				currentCollectionName = selectedCollection.id?.toString();
-				currentLanguage = contentLanguage.value;
-			} else if (initialLoadComplete) {
-				navigationError = `Collection not found: ${$page.params.collection}`;
-				logger.error(navigationError);
-				goto('/404');
-			}
-		} catch (error) {
-			const errorMessage = error instanceof Error ? error.message : String(error);
-			navigationError = `Failed to initialize collection: ${errorMessage}`;
-			logger.error('Collection initialization failed:', { error: errorMessage });
-		} finally {
-			isLoading = false;
-		}
-	}
-
-	// Handle browser events with cleanup
 	$effect(() => {
-		if (!browser) return;
+		if (!page.params.collection) return;
 
-		window.addEventListener('popstate', handlePopState);
-		if (!initialLoadComplete) initializeCollection();
-
-		return () => {
-			window.removeEventListener('popstate', handlePopState);
-		};
+		const selectedCollection = deserializeCollection(data.collection);
+		console.log('selectedCollection', selectedCollection);
+		// console.log('selectedCollection', selectedCollection, page.params.collection);
+		if (selectedCollection._id !== collection.value?._id) {
+			collection.set(selectedCollection);
+		}
 	});
 
-	// Handle collection changes
 	$effect(() => {
-		if (!initialLoadComplete || !collection?.value?.name) return;
-
-		const newCollectionName = collection.value.id.toString();
-		if (newCollectionName === currentCollectionName) return;
-
-		currentCollectionName = newCollectionName;
-		if (!forwardBackward) {
-			forwardBackward = true;
-			goto(`/${contentLanguage.value}${collection.value.path.toString()}`).then(() => {
-				forwardBackward = false;
-			});
+		if (!(publicEnv.AVAILABLE_CONTENT_LANGUAGES as ReadonlyArray<AvailableLanguageTag>).includes(data.contentLanguage as AvailableLanguageTag)) {
+			// If data.contentLanguage is invalid and contentLanguage is not already set to a valid value, fall back to 'en'
+			if (!contentLanguage.value || !(publicEnv.AVAILABLE_CONTENT_LANGUAGES as ReadonlyArray<AvailableLanguageTag>).includes(contentLanguage.value)) {
+				contentLanguage.set('en');
+			}
+		} else {
+			contentLanguage.set(data.contentLanguage as AvailableLanguageTag);
 		}
 	});
 
 	// Handle language changes
 	$effect(() => {
-		if (!initialLoadComplete || !collection?.value?.name) return;
+		if (!collection?.value?.name) return;
 
 		const newLanguage = contentLanguage.value;
-		if (newLanguage === currentLanguage) return;
-
-		currentLanguage = newLanguage;
-		goto(`/${newLanguage}${collection.value.path.toString()}`);
+		const currentPath = page.url.pathname;
+		const newPath = `/${newLanguage}${collection.value.path.toString()}`;
+		console.log('language change', 'currentPath', currentPath, 'newPath', newPath);
+		if (currentPath !== newPath) goto(newPath);
 	});
 
 	// Handle browser history navigation
-	function handlePopState() {
-		forwardBackward = true;
-		initializeCollection();
-	}
 
 	// Update SEO metadata
 	$effect(() => {
@@ -139,10 +96,6 @@ It also handles navigation, mode switching (view, edit, create, media), and SEO 
 		<div class="loading flex h-full items-center justify-center">
 			<span class="loading-spinner">Loading...</span>
 		</div>
-	{:else if navigationError}
-		<div class="error text-error-500" role="alert">
-			{navigationError}
-		</div>
 	{:else if collection.value}
 		{#if mode.value === 'view' || mode.value === 'modify'}
 			<EntryList />
@@ -150,7 +103,7 @@ It also handles navigation, mode switching (view, edit, create, media), and SEO 
 			<div id="fields_container" class="fields max-h-[calc(100vh-60px)] overflow-y-auto max-md:max-h-[calc(100vh-120px)]">
 				<Fields fields={collection.value.fields} fieldsData={collection.value.fields} customData={collectionValue.value} root={false} />
 			</div>
-		{:else if mode.value === 'media' && $page.params.collection}
+		{:else if mode.value === 'media' && page.params.collection}
 			<MediaGallery />
 		{/if}
 	{:else}

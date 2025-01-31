@@ -122,7 +122,11 @@
 		{/if}
 	</div>
 {:else}
-	<select class="select w-full" value={$contentLanguage} onchange={(e) => handleLanguageChange(e.currentTarget.value as AvailableLanguageTag)}>
+	<select
+		class="select w-full max-w-[70px]"
+		value={$contentLanguage}
+		onchange={(e) => handleLanguageChange(e.currentTarget.value as AvailableLanguageTag)}
+	>
 		{#each publicEnv.AVAILABLE_CONTENT_LANGUAGES as lang (lang)}
 			<option value={lang}>{lang.toUpperCase()}</option>
 		{/each}

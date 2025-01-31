@@ -38,7 +38,7 @@
 		name: string;
 		icon: string;
 		isCategory: boolean;
-		items?: DndItem[];
+		children?: DndItem[];
 	}
 
 	interface CategoryUpdateResponse {
@@ -198,18 +198,18 @@
 			onconsider={handleDndConsider}
 			onfinalize={handleDndFinalize}
 			role="list"
-			aria-label={`${isCategory ? 'Category' : 'Collection'} items`}
+			aria-label={`${isCategory ? 'Category' : 'Collection'} children`}
 		>
 			{#each items as item (item.id)}
 				<div animate:flip={{ duration: flipDurationMs }} class="mx-0.5 p-0.5">
 					<Column
 						name={item.name}
 						icon={item.icon}
-						items={item.items || []}
+						items={item.children ?? []}
 						level={level + 0.25}
 						isCategory={item.isCategory}
 						onUpdate={(newItems) => {
-							item.items = newItems;
+							item.children = newItems;
 							onUpdate(items);
 						}}
 						{onEditCategory}

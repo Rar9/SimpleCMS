@@ -289,7 +289,10 @@
 			</div>
 
 			<!-- Enhanced System Language Selector -->
-			<div class={sidebarState.sidebar.value.left === 'full' ? 'order-3 row-span-2' : 'order-2'} use:popup={SystemLanguageTooltip}>
+			<div
+				class={sidebarState.sidebar.value.left === 'full' ? 'order-3 row-span-2 mx-auto pb-4' : 'order-2 mx-auto'}
+				use:popup={SystemLanguageTooltip}
+			>
 				<div class="language-selector relative" bind:this={dropdownRef}>
 					{#if publicEnv.AVAILABLE_SYSTEM_LANGUAGES.length > 5}
 						<button
@@ -313,7 +316,6 @@
 								<div class="border-b border-surface-600 p-2">
 									<input
 										type="text"
-										bind:this={searchInput}
 										bind:value={searchQuery}
 										placeholder="Search language..."
 										class="w-full rounded-md bg-surface-800 px-3 py-2 text-white placeholder:text-surface-400 focus:outline-none focus:ring-2"

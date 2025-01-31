@@ -25,7 +25,6 @@
 	// Stores
 	import { collectionValue, mode } from '@src/stores/collectionStore.svelte';
 	import { contentStructure } from '@root/src/stores/collectionStore.svelte';
-	import { dbAdapter } from '@src/databases/db';
 
 	// Components
 	import PageTitle from '@components/PageTitle.svelte';
@@ -66,41 +65,14 @@
 	}
 
 	// State variables
-	let currentConfig = $state<Record<string, CollectionData>>({});
+
+	let data = $props<{ contentStructure: Record<string, CollectionData> }>();
+	let currentConfig = $derived(data.nestedContentStructure);
 	let isLoading = $state(false);
 	let apiError = $state<string | null>(null);
 
 	const toastStore = getToastStore();
 	const modalStore = getModalStore();
-
-	// Load content structure from database
-	const loadContentStructure = async () => {
-		if (!dbAdapter) {
-			console.error('dbAdapter is not initialized');
-			return;
-		}
-		const contentNodes = await dbAdapter.getContentNodes();
-		currentConfig = contentNodes.reduce(
-			(acc: Record<string, CollectionData>, node: any) => {
-				acc[node.path] = {
-					...node,
-					id: node.id,
-					icon: node.icon,
-					name: node.name,
-					isCollection: node.isCollection || false
-				};
-				return acc;
-			},
-			{} as Record<string, CollectionData>
-		);
-	};
-
-	loadContentStructure();
-
-	// Initialize the categories store with the current config
-	$effect(() => {
-		contentStructure.set(currentConfig);
-	});
 
 	// Modal Trigger - New Category
 	function modalAddCategory(existingCategory?: ExistingCategory): void {
@@ -152,7 +124,7 @@
 				});
 			}
 		});
-		currentConfig = newConfig;
+
 		contentStructure.set(newConfig);
 	}
 
@@ -168,7 +140,6 @@
 			subcategories: {}
 		};
 
-		currentConfig = newConfig;
 		contentStructure.set(newConfig);
 	}
 
@@ -240,7 +211,7 @@
 
 				if (response.ok) {
 					showToast('Categories updated successfully', 'success');
-					currentConfig = currentConfig;
+
 					contentStructure.set(currentConfig);
 
 					// Create and dispatch a proper CustomEvent
@@ -345,6 +316,6 @@
 		<p class="mb-4 text-center dark:text-primary-500">{m.collection_text_description()}</p>
 
 		<!-- display collections -->
-		<Board {currentConfig} onEditCategory={modalAddCategory} />
+		<Board contentNodes={contentStructure.value} onEditCategory={modalAddCategory} />
 	</div>
 </div>

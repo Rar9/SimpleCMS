@@ -55,7 +55,7 @@ Key features:
 
 	interface Props {
 		children?: import('svelte').Snippet;
-		data: { contentStructure: any; contentLanguage: string; systemLanguage: string };
+		data: { contentStructure: any; nestedContentStructure: any; contentLanguage: string; systemLanguage: string };
 	}
 
 	let { children, data }: Props = $props();
@@ -67,28 +67,29 @@ Key features:
 	let mediaQuery: MediaQueryList;
 
 	// Update content language when data changes, ensuring it's a valid language tag
-	$effect(() => {
-		if (!(publicEnv.AVAILABLE_CONTENT_LANGUAGES as ReadonlyArray<AvailableLanguageTag>).includes(data.contentLanguage as AvailableLanguageTag)) {
-			// If data.contentLanguage is invalid and contentLanguage is not already set to a valid value, fall back to 'en'
-			if (!contentLanguage.value || !(publicEnv.AVAILABLE_CONTENT_LANGUAGES as ReadonlyArray<AvailableLanguageTag>).includes(contentLanguage.value)) {
-				contentLanguage.set('en');
-			}
-		} else {
-			contentLanguage.set(data.contentLanguage as AvailableLanguageTag);
-		}
-	});
+	//$effect(() => {
+	//	if (!(publicEnv.AVAILABLE_CONTENT_LANGUAGES as ReadonlyArray<AvailableLanguageTag>).includes(data.contentLanguage as AvailableLanguageTag)) {
+	//		// If data.contentLanguage is invalid and contentLanguage is not already set to a valid value, fall back to 'en'
+	//		if (!contentLanguage.value || !(publicEnv.AVAILABLE_CONTENT_LANGUAGES as ReadonlyArray<AvailableLanguageTag>).includes(contentLanguage.value)) {
+	//			contentLanguage.set('en');
+	//		}
+	//	} else {
+	//		contentLanguage.set(data.contentLanguage as AvailableLanguageTag);
+	//	}
+	//});
 
 	// Handle collection changes
-	$effect(() => {
-		const newCollection = collection.value;
-		if (!newCollection?.name) return;
-
-		const newPath = `/${contentLanguage.value || publicEnv.DEFAULT_CONTENT_LANGUAGE}${String(newCollection.path)}`;
-		if (page.url.pathname !== newPath && mode.value !== 'media') {
-			goto(newPath);
-		}
-	});
-
+	//$effect(() => {
+	//	const newCollection = collection.value;
+	//	if (!newCollection?.name) return;
+	//
+	//	const newPath = `/${contentLanguage.value || publicEnv.DEFAULT_CONTENT_LANGUAGE}${String(newCollection.path)}`;
+	//	if (page.url.pathname !== newPath && mode.value !== 'media') {
+	//		console.log('layout collection chnage redirect', 'newPath', newPath);
+	//		goto(newPath);
+	//	}
+	//});
+	//
 	// Update collection loaded state when store changes
 	$effect(() => {
 		if (collections.value && Object.keys(collections.value).length > 0) {
@@ -111,8 +112,8 @@ Key features:
 	// Function to initialize collections using ContentManager
 	async function initializeCollections() {
 		try {
-			console.log('Loading collections...', data.contentStructure);
-			contentStructure.set(data.contentStructure);
+			console.log('Loading collections...', data);
+			contentStructure.set(data.nestedContentStructure);
 			isCollectionsLoaded = true;
 		} catch (error) {
 			console.error('Error loading collections:', error);

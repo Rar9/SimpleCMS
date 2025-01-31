@@ -39,6 +39,7 @@ Features:
 
 	// ParaglideJS
 	import * as m from '@src/paraglide/messages';
+
 	// Components
 	import EntryListMultiButton from './EntryList_MultiButton.svelte';
 	import TranslationStatus from '@components/TranslationStatus.svelte';
@@ -457,11 +458,13 @@ Features:
 			<div class="mt-1 sm:hidden">
 				<TranslationStatus />
 			</div>
+
 			<!-- Table Filter with Translation Content Language -->
 			<div class="relative mt-1 hidden items-center justify-center gap-2 sm:flex">
 				<TableFilter bind:globalSearchValue bind:filterShow bind:columnShow bind:density />
 				<TranslationStatus />
 			</div>
+
 			<!-- MultiButton -->
 			<div class="mt-2 w-full sm:mt-0 sm:w-auto">
 				<EntryListMultiButton {isCollectionEmpty} />
