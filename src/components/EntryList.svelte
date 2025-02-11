@@ -384,7 +384,6 @@ Features:
 		if (!currentCollection?._id || !contentStructure.value) return '';
 
 		// Helper function to find parent category name
-
 		return currentCollection.path?.split('/').filter(Boolean).join(' >');
 	});
 

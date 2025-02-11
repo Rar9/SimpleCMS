@@ -59,21 +59,18 @@ Features:
 							name: child.translations?.find((t) => t.languageTag === contentLanguage.value)?.translationName || child.name
 						}))
 					: undefined;
+			const isNodeExpanded = collection.value?._id === node._id;
 			return {
 				...node,
 				name: label,
 				id: node._id,
-				value: node.path,
-				name: node.name,
 				icon: node.icon,
-				isExpanded: collection.value?._id === node._id,
+				isExpanded: isNodeExpanded,
 				onClick: () => handleCollectionSelect(node),
 				children,
 				badge: isCategory
 					? {
-							count: node.children?.filter((child) => child.nodeType === 'collection').length || 0,
-							// Only show count for categories (parent nodes)
-							visible: !node.isExpanded // Show when expanded
+							count: node.children?.filter((child) => child.nodeType === 'collection').length || 0
 						}
 					: undefined
 			};
@@ -105,7 +102,6 @@ Features:
 			collection.set(null);
 			goto(`/${contentLanguage.value}${selectedCollection.path?.toString()}`);
 		}
-		handleSidebarToggle();
 		shouldShowNextButton.set(true);
 	}
 
@@ -170,9 +166,9 @@ Features:
 				<iconify-icon icon="bi:images" width="20" class="text-primary-500"></iconify-icon>
 			{/if}
 		</button>
+	{/if}
 
-		<!-- Collections TreeView -->
-
+	{#if isMediaMode}
 		<!-- Back to Collections Button -->
 		<button
 			class="btn mt-1 flex w-full items-center bg-surface-400 py-2 hover:!bg-surface-500 hover:text-white dark:bg-surface-600"
@@ -186,6 +182,7 @@ Features:
 			<iconify-icon icon="bi:collection" width="24" class="px-2 py-1 text-error-500"></iconify-icon>
 			<p class="mr-auto text-center uppercase">Collections</p>
 		</button>
+
 		<!-- Display Virtual Folders as TreeView -->
 		<TreeView k={1} nodes={virtualFolderNodes} selectedId={collection.value?._id} compact={sidebarState.sidebar.value.left !== 'full'} {search}
 		></TreeView>

@@ -21,7 +21,6 @@ Key features:
 
 	import { publicEnv } from '@root/config/public';
 	import { onMount, onDestroy } from 'svelte';
-	import { goto } from '$app/navigation';
 
 	// Utils
 	import { getTextDirection } from '@utils/utils';
@@ -29,9 +28,9 @@ Key features:
 
 	// Stores
 	import { page } from '$app/state';
-	import { contentLanguage, systemLanguage, isLoading } from '@stores/store.svelte';
-	import type { AvailableLanguageTag } from '@src/paraglide/runtime';
-	import { contentStructure, collection, collections, mode } from '@root/src/stores/collectionStore.svelte';
+	import { systemLanguage, isLoading } from '@stores/store.svelte';
+
+	import { contentStructure, collections } from '@root/src/stores/collectionStore.svelte';
 	import { sidebarState } from '@root/src/stores/sidebarStore.svelte';
 	import { screenSize, ScreenSize } from '@root/src/stores/screenSizeStore.svelte';
 
@@ -259,7 +258,7 @@ Key features:
 
 						<!-- Show globalSearchIndex  -->
 						{#if $isSearchVisible}
-							<SearchComponent />
+							<SearchComponent value="" placeholder="Search" classNames="" />
 						{/if}
 
 						{#if $isLoading}

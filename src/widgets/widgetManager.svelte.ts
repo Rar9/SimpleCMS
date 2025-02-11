@@ -135,37 +135,6 @@ export async function loadWidgets(): Promise<Map<string, Widget>> {
   return widgets; // Return widgets
 }
 
-// Database initialization
-let dbInitialized = false;
-
-async function initializeDatabase(): Promise<void> {
-  if (dbInitialized) return;
-
-  try {
-    // Initialize database connection
-    //await import('@src/databases/db').then(({ default: db }) => {
-    //  if (!db) {
-    //    throw new Error('Database connection failed');
-    //  }
-    //  dbInitialized = true;
-    //});
-  } catch (error) {
-    logger.error('Failed to initialize database:', error);
-    throw error;
-  }
-}
-
-async function updateWidgetStatusInDatabase(widgetName: string, isActive: boolean): Promise<void> {
-  try {
-    //await initializeDatabase();
-    //const { default: db } = await import('@src/databases/db');
-    //await db.updateWidgetStatus(widgetName, isActive);
-  } catch (error) {
-    logger.error(`Failed to update widget status in database: ${widgetName}`, error);
-    throw error;
-  }
-}
-
 // Function to initialize widgets
 async function initializeWidgets(): Promise<void> {
   if (widgetFunctions.size > 0) return;
@@ -223,7 +192,7 @@ async function initializeWidgets(): Promise<void> {
 
 // HMR setup
 if (import.meta.hot) {
-  import.meta.hot.accept('./{core,custom}/*/index.ts', () => {
+  import.meta.hot.accept(['./core/*/index.ts', './custom/*/index.ts'], () => {
     initializeWidgets();
     logger.info('Widgets reloaded due to file changes.');
   });
