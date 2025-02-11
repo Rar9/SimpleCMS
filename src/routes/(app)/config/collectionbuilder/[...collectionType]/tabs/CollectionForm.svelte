@@ -26,7 +26,6 @@ Features:
 	import type { PopupSettings } from '@skeletonlabs/skeleton';
 
 	// Collection Manager
-	import { contentManager } from '@src/content/ContentManager';
 
 	interface CollectionData {
 		name: string;
@@ -38,7 +37,7 @@ Features:
 		[key: string]: unknown;
 	}
 
-	let props = $props<{ handlePageTitleUpdate: (title: string) => void }>();
+	let props = $props<{ data: any; handlePageTitleUpdate: (title: string) => void }>();
 
 	// Extract the collection name from the URL
 	let contentTypes = $page.params.contentTypes;
@@ -57,7 +56,7 @@ Features:
 	const collectionExists = Object.values(collections.value).some((x) => x.name === contentTypes);
 	if (collectionExists) {
 		// Get collection data from ContentManager
-		const { collections: collectionData } = contentManager.getCollectionData();
+		const { collections: collectionData } = props.data;
 		const collection = collectionData.find((x) => x?.name === contentTypes);
 		if (collection) {
 			mode.set('edit');

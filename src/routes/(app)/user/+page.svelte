@@ -33,7 +33,6 @@
 	import { getToastStore, getModalStore } from '@skeletonlabs/skeleton';
 	import type { ModalComponent, ModalSettings } from '@skeletonlabs/skeleton';
 	import { collection } from '@src/stores/collectionStore.svelte';
-	import type { Schema } from '@src/content/ContentManager';
 
 	const toastStore = getToastStore();
 	const modalStore = getModalStore();

@@ -21,43 +21,49 @@ import { permissionConfigs } from '@src/auth/permissionManager';
 
 // System Logger
 import { logger } from '@utils/logger.svelte';
+import { contentManager } from '@root/src/content/ContentManager';
 
 export const load: PageServerLoad = async ({ locals }) => {
-	try {
-		const { user } = locals;
+  try {
+    const { user } = locals;
 
-		if (!user) {
-			logger.warn('User not authenticated, redirecting to login');
-			throw redirect(302, '/login');
-		}
+    if (!user) {
+      logger.warn('User not authenticated, redirecting to login');
+      throw redirect(302, '/login');
+    }
 
-		logger.debug(`User authenticated successfully for user: ${user._id}`);
+    logger.debug(`User authenticated successfully for user: ${user._id}`);
 
-		// Check user permission for collection builder
-		const collectionBuilderConfig = permissionConfigs.collectionbuilder;
-		const permissionCheck = await checkUserPermission(user, collectionBuilderConfig);
+    // Check user permission for collection builder
+    const collectionBuilderConfig = permissionConfigs.collectionbuilder;
+    const permissionCheck = await checkUserPermission(user, collectionBuilderConfig);
 
-		if (!permissionCheck.hasPermission) {
-			const message = `User ${user._id} does not have permission to access collection builder`;
-			logger.warn(message);
-			throw error(403, 'Insufficient permissions');
-		}
+    if (!permissionCheck.hasPermission) {
+      const message = `User ${user._id} does not have permission to access collection builder`;
+      logger.warn(message);
+      throw error(403, 'Insufficient permissions');
+    }
 
-		// Return user data
-		const { _id, ...rest } = user;
-		return {
-			user: {
-				id: _id.toString(),
-				...rest
-			}
-		};
-	} catch (err) {
-		if (err instanceof Error && 'status' in err) {
-			// This is likely a redirect or an error we've already handled
-			throw err;
-		}
-		const message = `Error in load function: ${err instanceof Error ? err.message : String(err)}`;
-		logger.error(message);
-		throw error(500, message);
-	}
+
+    const { contentStructure, nestedContentStructure } = await contentManager.getCollectionData()
+
+    // Return user data
+    const { _id, ...rest } = user;
+    return {
+      user: {
+        id: _id.toString(),
+        ...rest
+      },
+      nestedContentStructure,
+      contentStructure
+    };
+  } catch (err) {
+    if (err instanceof Error && 'status' in err) {
+      // This is likely a redirect or an error we've already handled
+      throw err;
+    }
+    const message = `Error in load function: ${err instanceof Error ? err.message : String(err)}`;
+    logger.error(message);
+    throw error(500, message);
+  }
 };

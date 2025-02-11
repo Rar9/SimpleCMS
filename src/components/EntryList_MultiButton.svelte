@@ -151,9 +151,11 @@
 	};
 
 	// Update button display when storeListboxValue changes using root effect
-	$effect.root(() => {
-		[actionName, buttonClass, iconValue] = buttonMap[storeListboxValue.value as ActionType] || ['', '', '', ''];
-		buttonClass = `btn ${buttonClass} rounded-none w-36 justify-between`;
+	$effect(() => {
+		let [action, buttonStyle, icon] = buttonMap[storeListboxValue.value as ActionType] || ['', '', '', ''];
+		actionName = action;
+		iconValue = icon;
+		buttonClass = `btn ${buttonStyle} rounded-none w-36 justify-between`;
 	});
 
 	// Handle empty collection state using root effect

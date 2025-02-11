@@ -28,17 +28,15 @@ Features:
 	import { debounce, getFieldName, meta_data } from '@utils/utils';
 	import { deleteData, getData, setStatus } from '@utils/data';
 
-	// Types
-	import type { Schema, CollectionData } from '@src/content/types';
-
 	// Stores
 	import { contentLanguage, systemLanguage } from '@stores/store.svelte';
-	import { mode, collectionValue, modifyEntry, statusMap, collection, collections, contentStructure } from '@src/stores/collectionStore.svelte';
+	import { mode, collectionValue, modifyEntry, statusMap, collection, contentStructure } from '@src/stores/collectionStore.svelte';
 	import { handleSidebarToggle, sidebarState, toggleSidebar } from '@src/stores/sidebarStore.svelte';
 	import { screenSize } from '@src/stores/screenSizeStore.svelte';
 
 	// ParaglideJS
 	import * as m from '@src/paraglide/messages';
+
 	// Components
 	import EntryListMultiButton from './EntryList_MultiButton.svelte';
 	import TranslationStatus from '@components/TranslationStatus.svelte';
@@ -108,7 +106,7 @@ Features:
 	let tableData = $state<any[]>([]);
 	// Tick row logic
 	let SelectAll = $state(false);
-	const selectedMap: { [key: string]: boolean } = {};
+	const selectedMap: { [key: string]: boolean } = $state({});
 	// Filter and debounce
 	let filters = $state<{ [key: string]: string }>(entryListPaginationSettings.filters || {});
 	const waitFilter = debounce(300); // Debounce filter function for 300ms
@@ -144,7 +142,7 @@ Features:
 			clearTimeout(loadingTimer);
 		}
 		// If the collection id is empty, return
-		if (!currentCollection?.id) return;
+		if (!currentCollection?._id) return;
 		// If fetch is true, set isLoading to true
 		if (fetch) {
 			// Set loading to true
@@ -154,7 +152,7 @@ Features:
 			// Fetch data using getData function
 			try {
 				data = await getData({
-					id: currentCollection?.id as any,
+					collectionId: currentCollection?._id as string,
 					page: currentPage,
 					limit: rowsPerPage,
 					contentLanguage: currentLanguage,
@@ -336,23 +334,22 @@ Features:
 				switch (status) {
 					case 'deleted':
 						// If the status is 'deleted', call the delete endpoint
-						await deleteData({ data: formData, contentTypes: currentCollection?.id as any });
+						await deleteData({ data: formData, collectionId: currentCollection?._id as string });
 						break;
 					case 'published':
 					case 'unpublished':
 					case 'testing':
 						// If the status is 'testing', call the publish endpoint
-						await setStatus({ data: formData, contentTypes: currentCollection?.id as any });
+						await setStatus({ data: formData, collectionId: currentCollection?._id as string });
 						break;
 					case 'cloned':
 					case 'scheduled':
 						// Trigger a toast message indicating that the feature is not yet implemented
-						const toast = {
+						toastStore.trigger({
 							message: 'Feature not yet implemented.',
 							background: 'variant-filled-error',
 							timeout: 3000
-						};
-						toastStore.trigger(toast);
+						});
 						break;
 				}
 				// Refresh the collection
@@ -384,19 +381,10 @@ Features:
 	});
 
 	let categoryName = $derived.by(() => {
-		if (!currentCollection?.id || !contentStructure.value) return '';
+		if (!currentCollection?._id || !contentStructure.value) return '';
 
 		// Helper function to find parent category name
-		const findParentCategory = (cats: Record<string, CollectionData>): string => {
-			for (const [categoryId, category] of Object.entries(cats)) {
-				if (category.collections?.some((col) => col.id === currentCollection.id)) {
-					return categoryId;
-				}
-			}
-			return '';
-		};
-
-		return findParentCategory(contentStructure.value);
+		return currentCollection.path?.split('/').filter(Boolean).join(' >');
 	});
 
 	let isCollectionEmpty = $derived(tableData.length === 0);
@@ -457,11 +445,13 @@ Features:
 			<div class="mt-1 sm:hidden">
 				<TranslationStatus />
 			</div>
+
 			<!-- Table Filter with Translation Content Language -->
 			<div class="relative mt-1 hidden items-center justify-center gap-2 sm:flex">
 				<TableFilter bind:globalSearchValue bind:filterShow bind:columnShow bind:density />
 				<TranslationStatus />
 			</div>
+
 			<!-- MultiButton -->
 			<div class="mt-2 w-full sm:mt-0 sm:w-auto">
 				<EntryListMultiButton {isCollectionEmpty} />
@@ -623,9 +613,9 @@ Features:
 							checked={SelectAll}
 							onCheck={(checked) => {
 								SelectAll = checked;
-								for (const key in selectedMap) {
-									selectedMap[key] = checked;
-								}
+								tableData.forEach((_, index) => {
+									selectedMap[index] = checked;
+								});
 							}}
 						/>
 						{#each displayTableHeaders.filter((header) => header.visible) as header}
@@ -673,7 +663,7 @@ Features:
 					{#each tableData as row, index}
 						<tr class="divide-x divide-surface-400">
 							<TableIcons
-								checked={selectedMap[index] || false}
+								checked={selectedMap[index] ?? false}
 								onCheck={(checked) => {
 									selectedMap[index] = checked;
 								}}
@@ -692,7 +682,7 @@ Features:
 										<!-- Use the Status component to display the Status -->
 										<Status value={row['status']} />
 									{:else}
-										{@html row[header.name]}
+										{row[header.name]}
 									{/if}
 								</td>
 							{/each}
@@ -725,7 +715,7 @@ Features:
 		<div class="text-center text-tertiary-500 dark:text-primary-500">
 			<iconify-icon icon="bi:exclamation-circle-fill" height="44" class="mb-2"></iconify-icon>
 			<p class="text-lg">
-				{m.EntryList_no_collection({ name: currentCollection?.name })}
+				{m.EntryList_no_collection({ name: currentCollection?.name as string })}
 			</p>
 		</div>
 	{/if}

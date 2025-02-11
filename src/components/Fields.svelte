@@ -64,7 +64,7 @@ Key features:
 	});
 
 	// Dynamic import of widget components
-	const modules: Record<string, { default: any }> = import.meta.glob('@widgets/*/*.svelte', { eager: true });
+	const modules: Record<string, { default: any }> = import.meta.glob('@widgets/**/*.svelte', { eager: true });
 
 	// Lifecycle
 	$effect(() => {
@@ -79,7 +79,7 @@ Key features:
 	$effect(() => {
 		if (collectionValue.value) {
 			const id = collectionValue.value._id;
-			apiUrl = `${dev ? 'http://localhost:5173' : publicEnv.SITE_NAME}/api/collection/${String(collection.value?.id) ?? ''}/${id}`;
+			apiUrl = `${dev ? 'http://localhost:5173' : publicEnv.SITE_NAME}/api/collection/${String(collection.value?._id)}/${id}`;
 		}
 	});
 
@@ -204,9 +204,9 @@ Key features:
 
 									<!-- Widget Input -->
 									{#if field.widget}
-										{#if typeof field.widget === 'string'}
-											{@const widgetName = field.widget}
-											{@const widgetPath = `/src/widgets/${pascalToCamelCase(widgetName)}/${widgetName}.svelte`}
+										{#if typeof field.widget.Name === 'string'}
+											{@const widgetName = field.widget.Name}
+											{@const widgetPath = `/src/widgets/core/${pascalToCamelCase(widgetName)}/${widgetName}.svelte`}
 											{@const WidgetComponent = modules[widgetPath]?.default}
 											{#if WidgetComponent}
 												<WidgetComponent {field} bind:WidgetData={fieldsData[getFieldName(field)]} bind:value={customData[getFieldName(field)]} />

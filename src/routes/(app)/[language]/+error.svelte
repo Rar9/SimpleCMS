@@ -15,7 +15,7 @@ Usage: This error component is automatically rendered when an error occurs durin
 	import { publicEnv } from '@root/config/public';
 
 	// Stores
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import type { Load } from '@sveltejs/kit';
 
 	// Components
@@ -24,6 +24,7 @@ Usage: This error component is automatically rendered when an error occurs durin
 
 	// ParaglideJS
 	import * as m from '@src/paraglide/messages';
+	import { contentLanguage } from '@root/src/stores/store.svelte';
 
 	const speed = 100;
 	const size = 140;
@@ -40,13 +41,14 @@ Usage: This error component is automatically rendered when an error occurs durin
 	// Set the error data and SEO information that will be used by the layout
 	export const load: Load = () => {
 		return {
-			SeoTitle: `Error ${$page.status} - ${publicEnv.SITE_NAME}`,
-			SeoDescription: `An error occurred while trying to access this page. Status: ${$page.status}. ${$page.error?.message || m.error_pagenotfound()}`
+			SeoTitle: `Error ${page.status} - ${publicEnv.SITE_NAME}`,
+			SeoDescription: `An error occurred while trying to access this page. Status: ${page.status}. ${page.error?.message || m.error_pagenotfound()}`
 		};
 	};
 </script>
 
-{#if $page}
+{#if page}
+	/{contentLanguage.value}/Collecion-page
 	<main class="flex h-screen w-full flex-col items-center justify-center bg-gradient-to-t from-surface-900 via-surface-700 to-surface-900 text-white">
 		<div class="relative">
 			<!-- Rotating SiteName -->
@@ -77,20 +79,20 @@ Usage: This error component is automatically rendered when an error occurs durin
 		<div class="relative">
 			<!-- Error class -->
 			<h1 class="relative text-9xl font-extrabold tracking-widest text-white">
-				{$page.status}
+				{page.status}
 			</h1>
 			<!-- Error url  -->
 			<div
 				class="absolute left-1/2 top-1/2 mx-auto -translate-x-1/2 -translate-y-1/2 rotate-12 transform rounded-md bg-error-600/80 px-2 text-center text-sm font-bold text-white"
 			>
-				<div class="min-w-[200px]">{$page.url}</div>
+				<div class="min-w-[200px]">{page.url}</div>
 				<div class="whitespace-nowrap">{m.error_pagenotfound()}</div>
 			</div>
 		</div>
 
 		<h1 class="text-center text-4xl font-extrabold tracking-widest text-surface-400">
-			{#if $page.error}
-				{$page.error.message}
+			{#if page.error}
+				{page.error.message}
 			{/if}
 		</h1>
 

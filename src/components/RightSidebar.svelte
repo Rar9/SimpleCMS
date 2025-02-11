@@ -81,10 +81,6 @@
 	let isPublished = $state(collectionValue.value?.status === 'published');
 	let schedule = $state(collectionValue.value?._scheduled ? new Date(Number(collectionValue.value._scheduled)).toISOString().slice(0, 16) : '');
 
-	let createdAtDate = $state(
-		collectionValue.value?.createdAt ? new Date(Number(collectionValue.value.createdAt) * 1000).toISOString().slice(0, 16) : ''
-	);
-
 	// Function to toggle the status
 	function toggleStatus() {
 		isPublished = !isPublished;
@@ -138,14 +134,14 @@
 
 		// Add system fields
 		if (mode.value === 'create') {
-			getData['createdAt'] = () => (createdAtDate ? Math.floor(new Date(createdAtDate).getTime() / 1000) : Math.floor(Date.now() / 1000));
+			getData['createdAt'] = () => (dates.created ? Math.floor(new Date(dates.created).getTime() / 1000) : Math.floor(Date.now() / 1000));
 			getData['updatedAt'] = getData['createdAt'];
 			getData['createdBy'] = () => user?.username ?? '';
 		} else {
 			getData['updatedAt'] = () => Math.floor(Date.now() / 1000);
 			getData['updatedBy'] = () => user?.username ?? '';
-			if (createdAtDate) {
-				getData['createdAt'] = () => Math.floor(new Date(createdAtDate).getTime() / 1000);
+			if (dates.created) {
+				getData['createdAt'] = () => Math.floor(new Date(dates.created).getTime() / 1000);
 			}
 		}
 
@@ -165,7 +161,7 @@
 		// If validation passed, save the data
 		if (validationPassed) {
 			try {
-				console.debug('Saving data...', `${JSON.stringify({ mode: mode.value, collection: collection.value.name })}`);
+				console.debug('Saving data...', `${JSON.stringify({ mode: mode.value, data: getData, collection: collection.value?.name })}`);
 
 				await saveFormData({
 					data: getData,
@@ -186,7 +182,7 @@
 
 <!-- Desktop Right Sidebar -->
 <!-- Check if user has create or write permission -->
-{#if ['edit', 'create'].includes(mode.value) || collection.value.permissions?.[user.role]?.write !== false}
+{#if ['edit', 'create'].includes(mode.value) || collection.value?.permissions?.[user.role]?.write !== false}
 	<div class="flex h-full w-full flex-col justify-between px-1 py-2">
 		{#if $shouldShowNextButton && mode.value === 'create'}
 			<button type="button" onclick={next} aria-label="Next" class="variant-filled-primary btn w-full gap-2">
@@ -199,7 +195,7 @@
 				<button
 					type="button"
 					onclick={saveData}
-					disabled={collection.value.permissions?.[user.role]?.write === false}
+					disabled={collection.value?.permissions?.[user.role]?.write === false}
 					class="variant-filled-primary btn w-full gap-2"
 					aria-label="Save entry"
 				>
@@ -224,7 +220,7 @@
 					<button
 						type="button"
 						onclick={() => $modifyEntry('cloned')}
-						disabled={collection.value.permissions?.[user.role]?.create === false && collection.value.permissions?.[user.role]?.write === false}
+						disabled={collection.value?.permissions?.[user.role]?.create === false && collection.value.permissions?.[user.role]?.write === false}
 						class="gradient-secondary gradient-secondary-hover gradient-secondary-focus btn w-full gap-2 text-white"
 						aria-label="Clone entry"
 					>
@@ -235,7 +231,7 @@
 					<button
 						type="button"
 						onclick={() => $modifyEntry('deleted')}
-						disabled={collection.value.permissions?.[user.role]?.delete === false}
+						disabled={collection.value?.permissions?.[user.role]?.delete === false}
 						class="variant-filled-error btn w-full"
 						aria-label="Delete entry"
 					>
@@ -267,7 +263,7 @@
 					<p class="mb-1">{m.adminarea_createat()}</p>
 					<input
 						type="datetime-local"
-						bind:value={createdAtDate}
+						bind:value={dates.created}
 						class="input variant-filled-surface text-tertiary-500 dark:text-primary-500"
 						aria-label="Set creation date"
 					/>

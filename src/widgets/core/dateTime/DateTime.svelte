@@ -77,7 +77,7 @@
 	<input
 		type="datetime-local"
 		bind:value={_data[_language]}
-		on:input|preventDefault={validateInput}
+		oninput={validateInput}
 		class="input w-full text-black dark:text-primary-500"
 		class:error={!!validationError}
 		aria-invalid={!!validationError}

@@ -13,11 +13,11 @@
 	import { updateTranslationProgress, getFieldName } from '@src/utils/utils';
 
 	// Stores
-	import { mode, collectionValue } from '@root/src/stores/collectionStore.svelte';
-	import { contentLanguage, validationStore } from '@src/stores/store';
+	import { mode, collection } from '@root/src/stores/collectionStore.svelte';
 
 	// Valibot validation
 	import { string, pipe, parse, type ValiError, minLength, maxLength, nonEmpty, nullable } from 'valibot';
+	import { contentLanguage, validationStore } from '@root/src/stores/store.svelte';
 
 	// Props
 	interface Props {
